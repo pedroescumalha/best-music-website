@@ -18,6 +18,7 @@ jobs:
       run: npm ci
 
   lint:
+    needs: install-dependencies
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
