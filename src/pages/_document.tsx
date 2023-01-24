@@ -11,12 +11,12 @@ export default function Document() {
     "orange-300"
   ];
 
-  const shuffledCssVars = colors.map(c => `var(--color-${c})`).sort(() => 0.5 - Math.random());
+  const shuffledCssVars: string[] = colors.map(c => `var(--color-${c})`).sort(() => 0.5 - Math.random());
 
   return (
     <Html lang="en">
       <Head />
-      <body style={{
+      <body className="h-screen" style={{
         background: `
           radial-gradient(at 45% 96%, ${shuffledCssVars[0]} 0px, transparent 50%),
           radial-gradient(at 89% 10%, ${shuffledCssVars[1]} 0px, transparent 50%),
@@ -26,7 +26,8 @@ export default function Document() {
           radial-gradient(at 33% 68%, ${shuffledCssVars[5]} 0px, transparent 50%),
           radial-gradient(at 86% 70%, ${shuffledCssVars[6]} 0px, transparent 50%)
         `,
-        backgroundBlendMode: "lighten, overlay, lighten, screen, normal, screen, overlay"
+        backgroundBlendMode: "lighten, overlay, lighten, screen, normal, screen, overlay",
+        backgroundSize: "200% 200%"
       }}>
         <Main />
         <NextScript />
