@@ -2,16 +2,13 @@ import { Html, Head, Main, NextScript } from "next/document";
 
 export default function Document() {
   const colors: string[] = [
-    "green-400",
-    "blue-900",
-    "green-100",
-    "red-900",
-    "yellow-200",
-    "violet-600",
-    "orange-500",
-    "sky-400",
-    "red-600",
-    "violet-600"
+    "red-400",
+    "cyan-300",
+    "purple-400",
+    "amber-300",
+    "teal-300",
+    "green-300",
+    "orange-300"
   ];
 
   const shuffledCssVars = colors.map(c => `var(--color-${c})`).sort(() => 0.5 - Math.random());
@@ -21,13 +18,15 @@ export default function Document() {
       <Head />
       <body style={{
         background: `
-          linear-gradient(115.58deg, ${shuffledCssVars[0]} 0%, ${shuffledCssVars[1]} 100.22%),
-          radial-gradient(92.72% 100% at 50% 0%, ${shuffledCssVars[2]} 0%, ${shuffledCssVars[3]} 100%),
-          radial-gradient(92.72% 100% at 50% 0%, ${shuffledCssVars[4]} 0%, ${shuffledCssVars[5]} 100%),
-          radial-gradient(109.21% 213.32% at 100% 0%, ${shuffledCssVars[6]} 0%, ${shuffledCssVars[7]} 100%),
-          linear-gradient(127.43deg, ${shuffledCssVars[8]} 0%, ${shuffledCssVars[9]} 100%)
+          radial-gradient(at 45% 96%, ${shuffledCssVars[0]} 0px, transparent 50%),
+          radial-gradient(at 89% 10%, ${shuffledCssVars[1]} 0px, transparent 50%),
+          radial-gradient(at 39% 52%, ${shuffledCssVars[2]} 0px, transparent 50%),
+          radial-gradient(at 25% 91%, ${shuffledCssVars[3]} 0px, transparent 50%),
+          radial-gradient(at 46% 58%, ${shuffledCssVars[4]} 0px, transparent 50%),
+          radial-gradient(at 33% 68%, ${shuffledCssVars[5]} 0px, transparent 50%),
+          radial-gradient(at 86% 70%, ${shuffledCssVars[6]} 0px, transparent 50%)
         `,
-        backgroundBlendMode: "lighten, overlay, lighten, screen, normal"
+        backgroundBlendMode: "lighten, overlay, lighten, screen, normal, screen, overlay"
       }}>
         <Main />
         <NextScript />
