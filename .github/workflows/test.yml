@@ -1,0 +1,33 @@
+name: test
+
+on: push
+
+jobs:
+  install-dependencies:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        node-version: "18"
+    - uses: actions/cache@v3
+      with:
+        path: node_modules
+        key: best-music-website-node-modules-${{ hashFiles('package-lock.json') }}
+    - name: install dependencies
+      run: npm ci
+
+  lint:
+    needs: install-dependencies
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        node-version: "18"
+    - uses: actions/cache@v3
+      with:
+        path: node_modules
+        key: best-music-website-node-modules-${{ hashFiles('package-lock.json') }}
+    - name: lint
+      run: npm run lint
