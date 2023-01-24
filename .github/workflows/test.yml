@@ -27,6 +27,6 @@ jobs:
     - uses: actions/cache@v3
       with:
         path: node_modules
-        key: best-music-website-node-modules-${{GITHUB_SHA}}
+        key: best-music-website-node-modules-${{env.GITHUB_SHA}}
     - name: lint
       run: npm run lint
