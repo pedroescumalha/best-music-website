@@ -1,6 +1,6 @@
 import { Html, Head, Main, NextScript } from "next/document";
 
-export default function Document() {
+export default function Document() {  
   const colors: string[] = [
     "red-400",
     "cyan-300",

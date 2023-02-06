@@ -4,22 +4,20 @@ import Head from "next/head";
 import { FC } from "react";
 import Image from "next/image";
 
-const NavBar: FC = () => {
-  return (
-    <header className="flex justify-center pt-5">
-      <nav className="w-11/12 bg-white px-6 py-3 flex items-center justify-between shadow-sm">
-        <div>
-          <h1 className="text-4xl font-extrabold tracking-wide">Escumalha</h1>
-        </div>
-        <div className="text-end">
-          <p>bio</p>
-          <p>music</p>
-          <p>contacts</p>
-        </div>
-      </nav>
-    </header>    
-  );
-};
+const NavBar: FC = () => (
+  <header className="flex justify-center pt-5">
+    <nav className="w-11/12 bg-white px-6 py-3 flex items-center justify-between shadow-sm">
+      <div>
+        <h1 className="text-4xl font-extrabold tracking-wide">Escumalha</h1>
+      </div>
+      <div className="text-end">
+        <p>bio</p>
+        <p>music</p>
+        <p>contacts</p>
+      </div>
+    </nav>
+  </header>
+);
 
 const Footer: FC = () => {
   const iconSize = 20;
