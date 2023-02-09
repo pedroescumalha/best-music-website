@@ -1,18 +1,11 @@
-type sineWave = "sine";
-type squareWave = "square";
-type sawWave = "sawtooth";
-type triangleWave = "triangle";
-
-export type lfoWaveform = sineWave | squareWave;
+export type lfoWaveform = "sine" | "square";
 export type lfoDestination = "pitch" | "filterFrequency";
-export type waveform = sineWave | squareWave | sawWave | triangleWave;
 export type note = "C" | "C#" | "D" | "D#" | "E" | "F" | "F#" | "G" | "G#" | "A" | "A#" | "B";
 export type octave = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
 export interface ISynthesizer {
   volume: number;
   filterFrequency: number;
-  oscWaveform: waveform;
   lfoAmount: number; // between 0 and 100
   lfoFrequency: number; // between 0.1 and 100
   lfoWaveform: lfoWaveform;
@@ -25,7 +18,6 @@ export interface ISynthesizer {
 interface SynthesizerConfig {
   initialVolume: number;
   initialFilterFrequency: number;
-  initialWaveform: waveform;
   initialLFODestination: lfoDestination;
 }
 
@@ -151,7 +143,9 @@ export default class Synthesizer implements ISynthesizer {
   private readonly _lfoGain: GainNode;
   private readonly _filter: BiquadFilterNode;
   private _lfoDestination: lfoDestination;
-  private _oscillator: OscillatorNode | undefined;
+  private _triangleOscillator: OscillatorNode | undefined;
+  private _sawOscillator: OscillatorNode | undefined;
+  private _squareOscillator: OscillatorNode | undefined;
 
   constructor(config: SynthesizerConfig) {
     this._context = new AudioContext();
@@ -174,8 +168,6 @@ export default class Synthesizer implements ISynthesizer {
     this._lfo.start();
     this._lfoDestination = config.initialLFODestination; // this is needed or else TS complains. this is set by this.lfoDestination as well.
     this.lfoDestination = config.initialLFODestination;
-  
-    this.oscWaveform = config.initialWaveform;
   }
 
   get volume() {
@@ -224,9 +216,11 @@ export default class Synthesizer implements ISynthesizer {
 
   set lfoDestination(destination: lfoDestination) {
     if (destination === "filterFrequency") {
-      if (this._oscillator) {
-        this._lfoGain.disconnect(this._oscillator.frequency);
-      }
+      this.getOscillators().forEach(o => {
+        if (o) {
+          this._lfoGain.disconnect(o.frequency);
+        }        
+      });
 
       this._lfoGain.connect(this._filter.frequency);
     }
@@ -238,44 +232,60 @@ export default class Synthesizer implements ISynthesizer {
     this._lfoDestination = destination;
   }
 
-  oscWaveform: waveform;
-
   off() {
     this._lfo.disconnect();
     this._lfoGain.disconnect();
-    
-    if (this._oscillator) {
-      this._oscillator.disconnect();
-    }
-    
+    this.getOscillators().forEach(o => o?.disconnect());
     this._filter.disconnect();
     this._gainNode.disconnect();
-    this._context.close();    
+    this._context.close();
+  }
+
+  private getOscillators(): (OscillatorNode | undefined)[] {
+    return [
+      this._triangleOscillator,
+      this._squareOscillator,
+      this._sawOscillator,
+    ];
+  }
+
+  private createOsc(type: OscillatorType, frequency: number): OscillatorNode {
+    const osc = this._context.createOscillator();
+    osc.connect(this._filter);
+    osc.frequency.value = frequency;
+    osc.type = type;
+    return osc;
   }
 
   play(note: note, octave: octave) {
-    if (this._oscillator) {
-      this._oscillator.stop();
-      this._oscillator.disconnect();
-    }
-  
-    this._oscillator = this._context.createOscillator();
-    this._oscillator.connect(this._filter);
-    this._oscillator.frequency.value = keyboardFrequencies[note][octave];
-    this._oscillator.type = this.oscWaveform;
+    this.getOscillators().forEach(o => {
+      if (o) {
+        o.stop();
+        o.disconnect();
+      }
+    });
+    
+    this._sawOscillator = this.createOsc("sawtooth", keyboardFrequencies[note][octave]);
+    this._triangleOscillator = this.createOsc("triangle", keyboardFrequencies[note][octave]);
+    this._squareOscillator = this.createOsc("square", keyboardFrequencies[note][octave]);
 
     if (this.lfoDestination === "pitch") {
-      this._lfoGain.connect(this._oscillator.frequency);
+      this._lfoGain.connect(this._sawOscillator.frequency);
+      this._lfoGain.connect(this._triangleOscillator.frequency);
+      this._lfoGain.connect(this._squareOscillator.frequency);
     }
 
-    this._oscillator.start();    
+    this.getOscillators().forEach(o => o?.start());
   }
   
   stop() {
-    if (this._oscillator) {
-      this._oscillator.stop();
-      this._oscillator.disconnect(this._filter);
-      this._oscillator = undefined;  
-    }
+    this.getOscillators().forEach(o => {
+      console.log(o);
+      if (o) {
+        o.stop();
+        o.disconnect(this._filter);
+        o = undefined;
+      }
+    });
   }
 }

@@ -1,4 +1,4 @@
-import Synthesizer, { lfoDestination, lfoWaveform, note, octave, waveform } from "@/components/synthesizer";
+import Synthesizer, { lfoDestination, lfoWaveform, note, octave } from "@/components/synthesizer";
 import { FC, useEffect, useState } from "react";
 
 interface KeyProps {
@@ -70,7 +70,6 @@ export default function Home() {
     setSynth(new Synthesizer({
       initialVolume: 0.5,
       initialFilterFrequency: 1000,
-      initialWaveform: "sawtooth",
       initialLFODestination: "filterFrequency",
     }));
 
@@ -110,11 +109,6 @@ export default function Home() {
 
   const setSynthFrequency = (frequency: number) => setSynthParam(s => {
     s.filterFrequency = frequency;
-    return s;
-  });
-
-  const setWaveform = (waveform: waveform) => setSynthParam(s => {
-    s.oscWaveform = waveform;
     return s;
   });
 
@@ -169,15 +163,6 @@ export default function Home() {
         <label htmlFor="pitchLfoDestination">Pitch</label>
         <input type="radio" name="lfoDestination" id="frequencyLfoDestination" value="filterFrequency" onChange={e => setLFODestination(e.target.value as lfoDestination)} />
         <label htmlFor="frequencyLfoDestination">Frequency</label>
-      </div>
-      <div>
-        <span>waveform: </span>
-        <select name="waveform" onChange={e => setWaveform(e.target.value as waveform)} defaultValue={synth.oscWaveform}>
-          <option value="sine">Sine</option>
-          <option value="square">Square</option>
-          <option value="sawtooth">Sawtooth</option>
-          <option value="triangle">Triangle</option>
-        </select>
       </div>
       <Key keyboardKey="A" note="C" octave={octave} onKeyUp={() => synth.stop()} onKeyDown={(note, octave) => synth.play(note, octave)} />
       <Key keyboardKey="W" note="C#" octave={octave} onKeyUp={() => synth.stop()} onKeyDown={(note, octave) => synth.play(note, octave)} />
