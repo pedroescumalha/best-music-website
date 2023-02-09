@@ -150,17 +150,17 @@ export default function Home() {
       </div>
       <div>
         <span>lfo waveform: </span>
-        <select name="waveform" onChange={e => setLFOWaveform(e.target.value as lfoWaveform)}>
-          <option value="sine" selected>Sine</option>
+        <select name="waveform" onChange={e => setLFOWaveform(e.target.value as lfoWaveform)} defaultValue="sine">
+          <option value="sine">Sine</option>
           <option value="square">Square</option>
         </select>
       </div>      
       <div>
         <span>waveform: </span>
-        <select name="waveform" onChange={e => setWaveform(e.target.value as waveform)}>
+        <select name="waveform" onChange={e => setWaveform(e.target.value as waveform)} defaultValue="sawtooth">
           <option value="sine">Sine</option>
           <option value="square">Square</option>
-          <option value="sawtooth" selected>Sawtooth</option>
+          <option value="sawtooth">Sawtooth</option>
           <option value="triangle">Triangle</option>
         </select>
       </div>
