@@ -16,6 +16,7 @@ export interface ISynthesizer {
   lfoAmount: number; // between 0 and 100
   lfoFrequency: number; // between 0.1 and 100
   lfoWaveform: lfoWaveform;
+  lfoDestination: lfoDestination;
   off: () => void;
   play: (note: note, octave: octave) => void;
   stop: () => void;
@@ -25,6 +26,7 @@ interface SynthesizerConfig {
   initialVolume: number;
   initialFilterFrequency: number;
   initialWaveform: waveform;
+  initialLFODestination: lfoDestination;
 }
 
 type keyboard = {
@@ -148,6 +150,7 @@ export default class Synthesizer implements ISynthesizer {
   private readonly _lfo: OscillatorNode;
   private readonly _lfoGain: GainNode;
   private readonly _filter: BiquadFilterNode;
+  private _lfoDestination: lfoDestination;
   private _oscillator: OscillatorNode | undefined;
 
   constructor(config: SynthesizerConfig) {
@@ -169,7 +172,8 @@ export default class Synthesizer implements ISynthesizer {
     this._lfoGain.gain.value = 0;
     this._lfo.connect(this._lfoGain);
     this._lfo.start();
-    this._lfoGain.connect(this._filter.frequency);
+    this._lfoDestination = config.initialLFODestination; // this is needed or else TS complains. this is set by this.lfoDestination as well.
+    this.lfoDestination = config.initialLFODestination;
   
     this.oscWaveform = config.initialWaveform;
   }
@@ -214,13 +218,36 @@ export default class Synthesizer implements ISynthesizer {
     this._lfo.type = waveform;
   }
 
+  get lfoDestination() {
+    return this._lfoDestination;
+  }
+
+  set lfoDestination(destination: lfoDestination) {
+    if (destination === "filterFrequency") {
+      if (this._oscillator) {
+        this._lfoGain.disconnect(this._oscillator.frequency);
+      }
+
+      this._lfoGain.connect(this._filter.frequency);
+    }
+
+    if (destination === "pitch") {
+      this._lfoGain.disconnect(this._filter.frequency);
+    }
+
+    this._lfoDestination = destination;
+  }
+
   oscWaveform: waveform;
 
   off() {
+    this._lfo.disconnect();
+    this._lfoGain.disconnect();
+    
     if (this._oscillator) {
       this._oscillator.disconnect();
     }
-  
+    
     this._filter.disconnect();
     this._gainNode.disconnect();
     this._context.close();    
@@ -236,7 +263,11 @@ export default class Synthesizer implements ISynthesizer {
     this._oscillator.connect(this._filter);
     this._oscillator.frequency.value = keyboardFrequencies[note][octave];
     this._oscillator.type = this.oscWaveform;
-    // this._lfoGain.connect(this._oscillator.frequency);
+
+    if (this.lfoDestination === "pitch") {
+      this._lfoGain.connect(this._oscillator.frequency);
+    }
+
     this._oscillator.start();    
   }
   

@@ -1,4 +1,4 @@
-import Synthesizer, { lfoWaveform, note, octave, waveform } from "@/components/synthesizer";
+import Synthesizer, { lfoDestination, lfoWaveform, note, octave, waveform } from "@/components/synthesizer";
 import { FC, useEffect, useRef, useState } from "react";
 
 interface KeyProps {
@@ -60,11 +60,13 @@ export default function Home() {
   const initialWaveform: waveform = "sawtooth";
   const initialLFOAmount = 0;
   const initialLFOSpeed = 5;
+  const initialLFODestination: lfoDestination = "filterFrequency";
+
   const synthesizerRef = useRef<Synthesizer>();
   const [octave, setOctave] = useState<octave>(3);
 
   useEffect(() => {
-    synthesizerRef.current = new Synthesizer({ initialVolume, initialFilterFrequency, initialWaveform });
+    synthesizerRef.current = new Synthesizer({ initialVolume, initialFilterFrequency, initialWaveform, initialLFODestination });
 
     return () => {
       synthesizerRef.current?.off();
@@ -130,6 +132,12 @@ export default function Home() {
     }
   };
 
+  const setLFODestination = (destination: lfoDestination) => {
+    if (synthesizerRef.current) {
+      synthesizerRef.current.lfoDestination = destination;
+    }
+  };
+
   return (
     <div>
       <div>
@@ -154,7 +162,14 @@ export default function Home() {
           <option value="sine">Sine</option>
           <option value="square">Square</option>
         </select>
-      </div>      
+      </div>
+      <div>
+        <span>LFO destination:</span>
+        <input type="radio" name="lfoDestination" id="pitchLfoDestination" value="pitch" onChange={e => setLFODestination(e.target.value as lfoDestination)} />
+        <label htmlFor="pitchLfoDestination">Pitch</label>
+        <input type="radio" name="lfoDestination" id="frequencyLfoDestination" value="filterFrequency" checked onChange={e => setLFODestination(e.target.value as lfoDestination)} />
+        <label htmlFor="frequencyLfoDestination">Frequency</label>
+      </div>
       <div>
         <span>waveform: </span>
         <select name="waveform" onChange={e => setWaveform(e.target.value as waveform)} defaultValue="sawtooth">
