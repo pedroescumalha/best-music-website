@@ -1,5 +1,5 @@
 import Synthesizer, { lfoDestination, lfoWaveform, note, octave, waveform } from "@/components/synthesizer";
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, useEffect, useState } from "react";
 
 interface KeyProps {
   keyboardKey: string;
@@ -55,22 +55,29 @@ const Key: FC<KeyProps> = ({ keyboardKey, note, octave, onKeyDown, onKeyUp }) =>
 };
 
 export default function Home() {
-  const initialVolume = 0.5;
-  const initialFilterFrequency = 1000;
-  const initialWaveform: waveform = "sawtooth";
-  const initialLFOAmount = 0;
-  const initialLFOSpeed = 5;
-  const initialLFODestination: lfoDestination = "filterFrequency";
-
-  const synthesizerRef = useRef<Synthesizer>();
+  const [synth, setSynth] = useState<Synthesizer>();
   const [octave, setOctave] = useState<octave>(3);
 
+  const setSynthParam = (setParam: (synthesizer: Synthesizer) => Synthesizer): void => {
+    setSynth(s => {
+      if (s) {
+        return setParam(s);
+      }
+    });
+  };
+
   useEffect(() => {
-    synthesizerRef.current = new Synthesizer({ initialVolume, initialFilterFrequency, initialWaveform, initialLFODestination });
+    setSynth(new Synthesizer({
+      initialVolume: 0.5,
+      initialFilterFrequency: 1000,
+      initialWaveform: "sawtooth",
+      initialLFODestination: "filterFrequency",
+    }));
 
     return () => {
-      synthesizerRef.current?.off();
+      synth?.off();
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -96,69 +103,62 @@ export default function Home() {
     };
   }, [octave]);
 
-  const setSynthVolume = (volume: number) => {
-    if (synthesizerRef.current) {
-      synthesizerRef.current.volume = volume;
-    }
-  };
+  const setSynthVolume = (volume: number) => setSynthParam(s => {
+    s.volume = volume;
+    return s;
+  });
 
-  const setSynthFrequency = (frequency: number) => {
-    if (synthesizerRef.current) {
-      synthesizerRef.current.filterFrequency = frequency;
-    }
-  };
+  const setSynthFrequency = (frequency: number) => setSynthParam(s => {
+    s.filterFrequency = frequency;
+    return s;
+  });
 
-  const setWaveform = (waveform: waveform) => {
-    if (synthesizerRef.current) {
-      synthesizerRef.current.oscWaveform = waveform;
-    }
-  };
+  const setWaveform = (waveform: waveform) => setSynthParam(s => {
+    s.oscWaveform = waveform;
+    return s;
+  });
 
-  const setLFOAmount = (amount: number) => {
-    if (synthesizerRef.current) {
-      synthesizerRef.current.lfoAmount = amount;
-    }
-  };
+  const setLFOAmount = (amount: number) => setSynthParam(s => {
+    s.lfoAmount = amount;
+    return s;
+  });
 
-  const setLFOFrequency = (frequency: number) => {
-    if (synthesizerRef.current) {
-      synthesizerRef.current.lfoFrequency = frequency;
-    }
-  };
+  const setLFOFrequency = (frequency: number) => setSynthParam(s => {
+    s.lfoFrequency = frequency;
+    return s;
+  });
 
-  const setLFOWaveform = (waveform: lfoWaveform) => {
-    if (synthesizerRef.current) {
-      synthesizerRef.current.lfoWaveform = waveform;
-    }
-  };
+  const setLFOWaveform = (waveform: lfoWaveform) => setSynthParam(s => {
+    s.lfoWaveform = waveform;
+    return s;
+  });
 
-  const setLFODestination = (destination: lfoDestination) => {
-    if (synthesizerRef.current) {
-      synthesizerRef.current.lfoDestination = destination;
-    }
-  };
+  const setLFODestination = (destination: lfoDestination) => setSynthParam(s => {
+    s.lfoDestination = destination;
+    return s;
+  });
 
-  return (
+  return !synth ? <></> : (
     <div>
       <div>
         <span>Volume: </span>
-        <input type="range" min="0" max="100" step={1} defaultValue={initialVolume * 100} onChange={(e) =>  setSynthVolume(parseInt(e.target.value) / 100)} />
+        <input type="range" min="0" max="100" step={1} defaultValue={synth.volume * 100} onChange={(e) =>  setSynthVolume(parseInt(e.target.value) / 100)} />
       </div>
       <div>
         <span>Filter Frequency: </span>
-        <input type="range" min="0" max="1000" step={1} defaultValue={initialFilterFrequency} onChange={(e) => setSynthFrequency(parseInt(e.target.value))} />
+        <input type="range" min="0" max="1000" step={1} defaultValue={synth.filterFrequency} onChange={(e) => setSynthFrequency(parseInt(e.target.value))} />
       </div>
       <div>
         <span>LFO amount: </span>
-        <input type="range" min="0" max="100" step={1} defaultValue={initialLFOAmount} onChange={(e) =>  setLFOAmount(parseInt(e.target.value))} />
+        <input type="range" min="0" max="100" step={1} defaultValue={synth.lfoAmount} onChange={(e) =>  setLFOAmount(parseInt(e.target.value))} />
       </div>
       <div>
         <span>LFO frequency: </span>
-        <input type="range" min="0" max="50" step={1} defaultValue={initialLFOSpeed} onChange={(e) =>  setLFOFrequency(parseInt(e.target.value))} />
+        <input type="range" min="0" max="50" step={1} defaultValue={synth.lfoFrequency} onChange={(e) =>  setLFOFrequency(parseInt(e.target.value))} />
       </div>
       <div>
         <span>lfo waveform: </span>
-        <select name="waveform" onChange={e => setLFOWaveform(e.target.value as lfoWaveform)} defaultValue="sine">
+        <select name="waveform" onChange={e => setLFOWaveform(e.target.value as lfoWaveform)} defaultValue={synth.lfoWaveform}>
           <option value="sine">Sine</option>
           <option value="square">Square</option>
         </select>
@@ -167,30 +167,30 @@ export default function Home() {
         <span>LFO destination:</span>
         <input type="radio" name="lfoDestination" id="pitchLfoDestination" value="pitch" onChange={e => setLFODestination(e.target.value as lfoDestination)} />
         <label htmlFor="pitchLfoDestination">Pitch</label>
-        <input type="radio" name="lfoDestination" id="frequencyLfoDestination" value="filterFrequency" checked onChange={e => setLFODestination(e.target.value as lfoDestination)} />
+        <input type="radio" name="lfoDestination" id="frequencyLfoDestination" value="filterFrequency" onChange={e => setLFODestination(e.target.value as lfoDestination)} />
         <label htmlFor="frequencyLfoDestination">Frequency</label>
       </div>
       <div>
         <span>waveform: </span>
-        <select name="waveform" onChange={e => setWaveform(e.target.value as waveform)} defaultValue="sawtooth">
+        <select name="waveform" onChange={e => setWaveform(e.target.value as waveform)} defaultValue={synth.oscWaveform}>
           <option value="sine">Sine</option>
           <option value="square">Square</option>
           <option value="sawtooth">Sawtooth</option>
           <option value="triangle">Triangle</option>
         </select>
       </div>
-      <Key keyboardKey="A" note="C" octave={octave} onKeyUp={() => synthesizerRef.current?.stop()} onKeyDown={(note, octave) => synthesizerRef.current?.play(note, octave)} />
-      <Key keyboardKey="W" note="C#" octave={octave} onKeyUp={() => synthesizerRef.current?.stop()} onKeyDown={(note, octave) => synthesizerRef.current?.play(note, octave)} />
-      <Key keyboardKey="S" note="D" octave={octave} onKeyUp={() => synthesizerRef.current?.stop()} onKeyDown={(note, octave) => synthesizerRef.current?.play(note, octave)} />
-      <Key keyboardKey="E" note="D#" octave={octave} onKeyUp={() => synthesizerRef.current?.stop()} onKeyDown={(note, octave) => synthesizerRef.current?.play(note, octave)} />
-      <Key keyboardKey="D" note="E" octave={octave} onKeyUp={() => synthesizerRef.current?.stop()} onKeyDown={(note, octave) => synthesizerRef.current?.play(note, octave)} />
-      <Key keyboardKey="F" note="F" octave={octave} onKeyUp={() => synthesizerRef.current?.stop()} onKeyDown={(note, octave) => synthesizerRef.current?.play(note, octave)} />
-      <Key keyboardKey="T" note="F#" octave={octave} onKeyUp={() => synthesizerRef.current?.stop()} onKeyDown={(note, octave) => synthesizerRef.current?.play(note, octave)} />
-      <Key keyboardKey="G" note="G" octave={octave} onKeyUp={() => synthesizerRef.current?.stop()} onKeyDown={(note, octave) => synthesizerRef.current?.play(note, octave)} />
-      <Key keyboardKey="Y" note="G#" octave={octave} onKeyUp={() => synthesizerRef.current?.stop()} onKeyDown={(note, octave) => synthesizerRef.current?.play(note, octave)} />
-      <Key keyboardKey="H" note="A" octave={octave} onKeyUp={() => synthesizerRef.current?.stop()} onKeyDown={(note, octave) => synthesizerRef.current?.play(note, octave)} />
-      <Key keyboardKey="U" note="A#" octave={octave} onKeyUp={() => synthesizerRef.current?.stop()} onKeyDown={(note, octave) => synthesizerRef.current?.play(note, octave)} />
-      <Key keyboardKey="J" note="B" octave={octave} onKeyUp={() => synthesizerRef.current?.stop()} onKeyDown={(note, octave) => synthesizerRef.current?.play(note, octave)} />
+      <Key keyboardKey="A" note="C" octave={octave} onKeyUp={() => synth.stop()} onKeyDown={(note, octave) => synth.play(note, octave)} />
+      <Key keyboardKey="W" note="C#" octave={octave} onKeyUp={() => synth.stop()} onKeyDown={(note, octave) => synth.play(note, octave)} />
+      <Key keyboardKey="S" note="D" octave={octave} onKeyUp={() => synth.stop()} onKeyDown={(note, octave) => synth.play(note, octave)} />
+      <Key keyboardKey="E" note="D#" octave={octave} onKeyUp={() => synth.stop()} onKeyDown={(note, octave) => synth.play(note, octave)} />
+      <Key keyboardKey="D" note="E" octave={octave} onKeyUp={() => synth.stop()} onKeyDown={(note, octave) => synth.play(note, octave)} />
+      <Key keyboardKey="F" note="F" octave={octave} onKeyUp={() => synth.stop()} onKeyDown={(note, octave) => synth.play(note, octave)} />
+      <Key keyboardKey="T" note="F#" octave={octave} onKeyUp={() => synth.stop()} onKeyDown={(note, octave) => synth.play(note, octave)} />
+      <Key keyboardKey="G" note="G" octave={octave} onKeyUp={() => synth.stop()} onKeyDown={(note, octave) => synth.play(note, octave)} />
+      <Key keyboardKey="Y" note="G#" octave={octave} onKeyUp={() => synth.stop()} onKeyDown={(note, octave) => synth.play(note, octave)} />
+      <Key keyboardKey="H" note="A" octave={octave} onKeyUp={() => synth.stop()} onKeyDown={(note, octave) => synth.play(note, octave)} />
+      <Key keyboardKey="U" note="A#" octave={octave} onKeyUp={() => synth.stop()} onKeyDown={(note, octave) => synth.play(note, octave)} />
+      <Key keyboardKey="J" note="B" octave={octave} onKeyUp={() => synth.stop()} onKeyDown={(note, octave) => synth.play(note, octave)} />
     </div>
   );
 }
