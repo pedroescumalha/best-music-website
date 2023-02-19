@@ -68,9 +68,9 @@ export default function Home() {
 
   useEffect(() => {
     setSynth(new Synthesizer({
-      initialVolume: 0.5,
-      initialFilterFrequency: 1000,
-      initialLFODestination: "filterFrequency",
+      masterVolume: 0.5,
+      filterFrequency: 1000,
+      lfoDestination: "filterFrequency",
       sawOscillatorVolume: 0,
       triangleOscillatorVolume: 0.3,
       squareOscillatorVolume: 0,

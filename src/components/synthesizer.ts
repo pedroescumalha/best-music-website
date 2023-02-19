@@ -19,9 +19,9 @@ export interface ISynthesizer {
 }
 
 interface SynthesizerConfig {
-  initialVolume: number;
-  initialFilterFrequency: number;
-  initialLFODestination: lfoDestination;
+  masterVolume: number;
+  filterFrequency: number;
+  lfoDestination: lfoDestination;
   sawOscillatorVolume: number;
   triangleOscillatorVolume: number;
   squareOscillatorVolume: number;
@@ -160,12 +160,12 @@ export default class Synthesizer implements ISynthesizer {
     this._context = new AudioContext();
   
     this._gainNode = this._context.createGain();
-    this._gainNode.gain.value = config.initialVolume;
+    this._gainNode.gain.value = config.masterVolume;
     this._gainNode.connect(this._context.destination);
   
     this._filter = this._context.createBiquadFilter();
     this._filter.type = "lowpass";
-    this._filter.frequency.value = config.initialFilterFrequency;
+    this._filter.frequency.value = config.filterFrequency;
     this._filter.connect(this._gainNode);
 
     this._lfo = this._context.createOscillator();
@@ -175,8 +175,8 @@ export default class Synthesizer implements ISynthesizer {
     this._lfoGain.gain.value = 0;
     this._lfo.connect(this._lfoGain);
     this._lfo.start();
-    this._lfoDestination = config.initialLFODestination; // this is needed or else TS complains. this is set by this.lfoDestination as well.
-    this.lfoDestination = config.initialLFODestination;
+    this._lfoDestination = config.lfoDestination; // this is needed or else TS complains. this is set by this.lfoDestination as well.
+    this.lfoDestination = config.lfoDestination;
     
     this._triangleOscillatorGain = this._context.createGain();
     this._triangleOscillatorGain.gain.value = config.triangleOscillatorVolume;
