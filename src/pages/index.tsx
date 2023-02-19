@@ -72,7 +72,7 @@ export default function Home() {
       filterFrequency: 1000,
       lfoDestination: "filterFrequency",
       sawOscillatorVolume: 0,
-      triangleOscillatorVolume: 0.3,
+      triangleOscillatorVolume: 0.25,
       squareOscillatorVolume: 0,
       subOscillatorvolume: 0,
     }));
