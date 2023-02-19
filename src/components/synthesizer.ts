@@ -13,6 +13,7 @@ export interface ISynthesizer {
   sawOscillatorVolume: number;
   triangleOscillatorVolume: number;
   squareOscillatorVolume: number;
+  subOscillatorVolume: number;
   off: () => void;
   play: (note: note, octave: octave) => void;
   stop: () => void;
@@ -25,6 +26,7 @@ interface SynthesizerConfig {
   sawOscillatorVolume: number;
   triangleOscillatorVolume: number;
   squareOscillatorVolume: number;
+  subOscillatorvolume: number;
 }
 
 type keyboard = {
@@ -152,9 +154,11 @@ export default class Synthesizer implements ISynthesizer {
   private _triangleOscillator: OscillatorNode | undefined;
   private _sawOscillator: OscillatorNode | undefined;
   private _squareOscillator: OscillatorNode | undefined;
+  private _subOscillator: OscillatorNode | undefined;
   private readonly _triangleOscillatorGain: GainNode;
   private readonly _sawOscillatorGain: GainNode;
   private readonly _squareOscillatorGain: GainNode;
+  private readonly _subOscillatorGain: GainNode;
 
   constructor(config: SynthesizerConfig) {
     this._context = new AudioContext();
@@ -187,6 +191,9 @@ export default class Synthesizer implements ISynthesizer {
     this._squareOscillatorGain = this._context.createGain();
     this._squareOscillatorGain.gain.value = config.squareOscillatorVolume;
     this._squareOscillatorGain.connect(this._filter);
+    this._subOscillatorGain = this._context.createGain();
+    this._subOscillatorGain.gain.value = config.subOscillatorvolume;
+    this._subOscillatorGain.connect(this._filter);
   }
 
   get volume() {
@@ -207,7 +214,7 @@ export default class Synthesizer implements ISynthesizer {
   }
 
   set sawOscillatorVolume(value: number) {
-    if (value < 0 || value > 0.3) {
+    if (value < 0 || value > 0.25) {
       console.error("Invalid oscillator gain value.");
       return;
     }
@@ -220,7 +227,7 @@ export default class Synthesizer implements ISynthesizer {
   }
 
   set triangleOscillatorVolume(value: number) {
-    if (value < 0 || value > 0.3) {
+    if (value < 0 || value > 0.25) {
       console.error("Invalid oscillator gain value.");
       return;
     }
@@ -233,13 +240,26 @@ export default class Synthesizer implements ISynthesizer {
   }
 
   set squareOscillatorVolume(value: number) {
-    if (value < 0 || value > 0.3) {
+    if (value < 0 || value > 0.25) {
       console.error("Invalid oscillator gain value.");
       return;
     }
 
     this._squareOscillatorGain.gain.value = value;
   }
+
+  get subOscillatorVolume() {
+    return this._subOscillatorGain.gain.value;
+  }
+
+  set subOscillatorVolume(value: number) {
+    if (value < 0 || value > 0.25) {
+      console.error("Invalid oscillator gain value.");
+      return;
+    }
+
+    this._subOscillatorGain.gain.value = value;
+  }  
 
   get filterFrequency() {
     return this._filter.frequency.value;
@@ -309,6 +329,7 @@ export default class Synthesizer implements ISynthesizer {
       this._triangleOscillator,
       this._squareOscillator,
       this._sawOscillator,
+      this._subOscillator,
     ];
   }
 
@@ -324,6 +345,11 @@ export default class Synthesizer implements ISynthesizer {
     if (type === "square") {
       return this._squareOscillatorGain;
     }
+
+    if (type === "sine") {
+      return this._subOscillatorGain;
+    }
+
 
     throw new Error("");
   }
@@ -347,11 +373,13 @@ export default class Synthesizer implements ISynthesizer {
     this._sawOscillator = this.createOsc("sawtooth", keyboardFrequencies[note][octave]);
     this._triangleOscillator = this.createOsc("triangle", keyboardFrequencies[note][octave]);
     this._squareOscillator = this.createOsc("square", keyboardFrequencies[note][octave]);
+    this._subOscillator = this.createOsc("sine", keyboardFrequencies[note][octave === 1 || octave === 7 ? octave : octave - 1 as octave]);
 
     if (this.lfoDestination === "pitch") {
       this._lfoGain.connect(this._sawOscillator.frequency);
       this._lfoGain.connect(this._triangleOscillator.frequency);
       this._lfoGain.connect(this._squareOscillator.frequency);
+      this._lfoGain.connect(this._subOscillator.frequency);
     }
 
     this.getOscillators().forEach(o => o?.start());
