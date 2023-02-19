@@ -4,7 +4,7 @@ export type note = "C" | "C#" | "D" | "D#" | "E" | "F" | "F#" | "G" | "G#" | "A"
 export type octave = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
 export interface ISynthesizer {
-  volume: number;
+  volume: number; // between 0 and 1
   filterFrequency: number;
   lfoAmount: number; // between 0 and 100
   lfoFrequency: number; // between 0.1 and 100
@@ -194,6 +194,11 @@ export default class Synthesizer implements ISynthesizer {
   }
 
   set volume(value: number) {
+    if (value < 0 || value > 1) {
+      console.error("Invalid master gain value.");
+      return;
+    }
+
     this._gainNode.gain.value = value;
   }
 
@@ -202,6 +207,11 @@ export default class Synthesizer implements ISynthesizer {
   }
 
   set sawOscillatorVolume(value: number) {
+    if (value < 0 || value > 0.3) {
+      console.error("Invalid oscillator gain value.");
+      return;
+    }
+
     this._sawOscillatorGain.gain.value = value;
   }
 
@@ -210,6 +220,11 @@ export default class Synthesizer implements ISynthesizer {
   }
 
   set triangleOscillatorVolume(value: number) {
+    if (value < 0 || value > 0.3) {
+      console.error("Invalid oscillator gain value.");
+      return;
+    }
+
     this._triangleOscillatorGain.gain.value = value;
   }
   
@@ -218,8 +233,13 @@ export default class Synthesizer implements ISynthesizer {
   }
 
   set squareOscillatorVolume(value: number) {
+    if (value < 0 || value > 0.3) {
+      console.error("Invalid oscillator gain value.");
+      return;
+    }
+
     this._squareOscillatorGain.gain.value = value;
-  }  
+  }
 
   get filterFrequency() {
     return this._filter.frequency.value;
