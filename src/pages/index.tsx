@@ -72,8 +72,9 @@ export default function Home() {
       filterFrequency: 1000,
       lfoDestination: "filterFrequency",
       sawOscillatorVolume: 0,
-      triangleOscillatorVolume: 0.3,
+      triangleOscillatorVolume: 0.25,
       squareOscillatorVolume: 0,
+      subOscillatorvolume: 0,
     }));
 
     return () => {
@@ -148,6 +149,11 @@ export default function Home() {
   const setSquareOscVolume = (value: number) => setSynthParam(s => {
     s.squareOscillatorVolume = value;
     return s;
+  });
+
+  const setSubOscVolume = (value: number) => setSynthParam(s => {
+    s.subOscillatorVolume = value;
+    return s;
   });  
 
   return !synth ? <></> : (
@@ -184,16 +190,20 @@ export default function Home() {
       </div>
       <div>
         <span>Triangle Oscillator Volume: </span>
-        <input type="range" min="0" max="30" step={1} defaultValue={synth.triangleOscillatorVolume * 100} onChange={(e) =>  setTriangleOscVolume(parseInt(e.target.value) / 100)} />
+        <input type="range" min="0" max="25" step={1} defaultValue={synth.triangleOscillatorVolume * 100} onChange={(e) =>  setTriangleOscVolume(parseInt(e.target.value) / 100)} />
       </div>
       <div>
         <span>Saw Oscillator Volume: </span>
-        <input type="range" min="0" max="30" step={1} defaultValue={synth.sawOscillatorVolume * 100} onChange={(e) =>  setSawOscVolume(parseInt(e.target.value) / 100)} />
+        <input type="range" min="0" max="25" step={1} defaultValue={synth.sawOscillatorVolume * 100} onChange={(e) =>  setSawOscVolume(parseInt(e.target.value) / 100)} />
       </div>
       <div>
         <span>Square Oscillator Volume: </span>
-        <input type="range" min="0" max="30" step={1} defaultValue={synth.squareOscillatorVolume * 100} onChange={(e) =>  setSquareOscVolume(parseInt(e.target.value) / 100)} />
+        <input type="range" min="0" max="25" step={1} defaultValue={synth.squareOscillatorVolume * 100} onChange={(e) =>  setSquareOscVolume(parseInt(e.target.value) / 100)} />
       </div>
+      <div>
+        <span>Sub Oscillator Volume: </span>
+        <input type="range" min="0" max="25" step={1} defaultValue={synth.subOscillatorVolume * 100} onChange={(e) =>  setSubOscVolume(parseInt(e.target.value) / 100)} />
+      </div>      
       <Key keyboardKey="A" note="C" octave={octave} onKeyUp={() => synth.stop()} onKeyDown={(note, octave) => synth.play(note, octave)} />
       <Key keyboardKey="W" note="C#" octave={octave} onKeyUp={() => synth.stop()} onKeyDown={(note, octave) => synth.play(note, octave)} />
       <Key keyboardKey="S" note="D" octave={octave} onKeyUp={() => synth.stop()} onKeyDown={(note, octave) => synth.play(note, octave)} />
