@@ -10,10 +10,10 @@ export interface ISynthesizer {
   lfoFrequency: number; // between 0.1 and 100
   lfoWaveform: lfoWaveform;
   lfoDestination: lfoDestination;
-  sawOscillatorVolume: number;
-  triangleOscillatorVolume: number;
-  squareOscillatorVolume: number;
-  subOscillatorVolume: number;
+  sawOscillatorVolume: number; // between 0 and 0.25
+  triangleOscillatorVolume: number; // between 0 and 0.25
+  squareOscillatorVolume: number; // between 0 and 0.25
+  subOscillatorVolume: number; // between 0 and 0.25
   off: () => void;
   play: (note: note, octave: octave) => void;
   stop: () => void;
@@ -181,20 +181,26 @@ export default class Synthesizer implements ISynthesizer {
     this._lfo.start();
     this._lfoDestination = config.lfoDestination; // this is needed or else TS complains. this is set by this.lfoDestination as well.
     this.lfoDestination = config.lfoDestination;
-    
-    this._triangleOscillatorGain = this._context.createGain();
-    this._triangleOscillatorGain.gain.value = config.triangleOscillatorVolume;
-    this._triangleOscillatorGain.connect(this._filter);
-    this._sawOscillatorGain = this._context.createGain();
-    this._sawOscillatorGain.gain.value = config.sawOscillatorVolume;
-    this._sawOscillatorGain.connect(this._filter);
-    this._squareOscillatorGain = this._context.createGain();
-    this._squareOscillatorGain.gain.value = config.squareOscillatorVolume;
-    this._squareOscillatorGain.connect(this._filter);
-    this._subOscillatorGain = this._context.createGain();
-    this._subOscillatorGain.gain.value = config.subOscillatorvolume;
-    this._subOscillatorGain.connect(this._filter);
+
+    this._triangleOscillatorGain = this.createOscillatorGain(config.triangleOscillatorVolume);
+    this._sawOscillatorGain = this.createOscillatorGain(config.sawOscillatorVolume);
+    this._squareOscillatorGain = this.createOscillatorGain(config.squareOscillatorVolume);
+    this._subOscillatorGain = this.createOscillatorGain(config.subOscillatorvolume);
   }
+
+  private createOscillatorGain(initialGainValue: number): GainNode {
+    if (!this.isOscGainValid(initialGainValue)) {
+      throw new Error(`Invalid oscillator gain value: ${initialGainValue}`);
+    }
+
+    const oscGain = this._context.createGain();
+    oscGain.gain.value = initialGainValue;
+    oscGain.connect(this._filter);
+    
+    return oscGain;
+  }
+
+  private isOscGainValid = (value: number): boolean => value >= 0 && value <= 0.25;
 
   get volume() {
     return this._gainNode.gain.value;
@@ -214,7 +220,7 @@ export default class Synthesizer implements ISynthesizer {
   }
 
   set sawOscillatorVolume(value: number) {
-    if (value < 0 || value > 0.25) {
+    if (!this.isOscGainValid(value)) {
       console.error("Invalid oscillator gain value.");
       return;
     }
@@ -227,7 +233,7 @@ export default class Synthesizer implements ISynthesizer {
   }
 
   set triangleOscillatorVolume(value: number) {
-    if (value < 0 || value > 0.25) {
+    if (!this.isOscGainValid(value)) {
       console.error("Invalid oscillator gain value.");
       return;
     }
@@ -240,7 +246,7 @@ export default class Synthesizer implements ISynthesizer {
   }
 
   set squareOscillatorVolume(value: number) {
-    if (value < 0 || value > 0.25) {
+    if (!this.isOscGainValid(value)) {
       console.error("Invalid oscillator gain value.");
       return;
     }
@@ -253,7 +259,7 @@ export default class Synthesizer implements ISynthesizer {
   }
 
   set subOscillatorVolume(value: number) {
-    if (value < 0 || value > 0.25) {
+    if (!this.isOscGainValid(value)) {
       console.error("Invalid oscillator gain value.");
       return;
     }
