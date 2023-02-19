@@ -71,6 +71,9 @@ export default function Home() {
       initialVolume: 0.5,
       initialFilterFrequency: 1000,
       initialLFODestination: "filterFrequency",
+      sawOscillatorVolume: 0,
+      triangleOscillatorVolume: 0.3,
+      squareOscillatorVolume: 0,
     }));
 
     return () => {
@@ -132,6 +135,21 @@ export default function Home() {
     return s;
   });
 
+  const setTriangleOscVolume = (value: number) => setSynthParam(s => {
+    s.triangleOscillatorVolume = value;
+    return s;
+  });
+
+  const setSawOscVolume = (value: number) => setSynthParam(s => {
+    s.sawOscillatorVolume = value;
+    return s;
+  });
+  
+  const setSquareOscVolume = (value: number) => setSynthParam(s => {
+    s.squareOscillatorVolume = value;
+    return s;
+  });  
+
   return !synth ? <></> : (
     <div>
       <div>
@@ -163,6 +181,18 @@ export default function Home() {
         <label htmlFor="pitchLfoDestination">Pitch</label>
         <input type="radio" name="lfoDestination" id="frequencyLfoDestination" value="filterFrequency" onChange={e => setLFODestination(e.target.value as lfoDestination)} />
         <label htmlFor="frequencyLfoDestination">Frequency</label>
+      </div>
+      <div>
+        <span>Triangle Oscillator Volume: </span>
+        <input type="range" min="0" max="30" step={1} defaultValue={synth.triangleOscillatorVolume * 100} onChange={(e) =>  setTriangleOscVolume(parseInt(e.target.value) / 100)} />
+      </div>
+      <div>
+        <span>Saw Oscillator Volume: </span>
+        <input type="range" min="0" max="30" step={1} defaultValue={synth.sawOscillatorVolume * 100} onChange={(e) =>  setSawOscVolume(parseInt(e.target.value) / 100)} />
+      </div>
+      <div>
+        <span>Square Oscillator Volume: </span>
+        <input type="range" min="0" max="30" step={1} defaultValue={synth.squareOscillatorVolume * 100} onChange={(e) =>  setSquareOscVolume(parseInt(e.target.value) / 100)} />
       </div>
       <Key keyboardKey="A" note="C" octave={octave} onKeyUp={() => synth.stop()} onKeyDown={(note, octave) => synth.play(note, octave)} />
       <Key keyboardKey="W" note="C#" octave={octave} onKeyUp={() => synth.stop()} onKeyDown={(note, octave) => synth.play(note, octave)} />

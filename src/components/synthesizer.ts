@@ -10,6 +10,9 @@ export interface ISynthesizer {
   lfoFrequency: number; // between 0.1 and 100
   lfoWaveform: lfoWaveform;
   lfoDestination: lfoDestination;
+  sawOscillatorVolume: number;
+  triangleOscillatorVolume: number;
+  squareOscillatorVolume: number;
   off: () => void;
   play: (note: note, octave: octave) => void;
   stop: () => void;
@@ -19,6 +22,9 @@ interface SynthesizerConfig {
   initialVolume: number;
   initialFilterFrequency: number;
   initialLFODestination: lfoDestination;
+  sawOscillatorVolume: number;
+  triangleOscillatorVolume: number;
+  squareOscillatorVolume: number;
 }
 
 type keyboard = {
@@ -146,6 +152,9 @@ export default class Synthesizer implements ISynthesizer {
   private _triangleOscillator: OscillatorNode | undefined;
   private _sawOscillator: OscillatorNode | undefined;
   private _squareOscillator: OscillatorNode | undefined;
+  private readonly _triangleOscillatorGain: GainNode;
+  private readonly _sawOscillatorGain: GainNode;
+  private readonly _squareOscillatorGain: GainNode;
 
   constructor(config: SynthesizerConfig) {
     this._context = new AudioContext();
@@ -168,6 +177,16 @@ export default class Synthesizer implements ISynthesizer {
     this._lfo.start();
     this._lfoDestination = config.initialLFODestination; // this is needed or else TS complains. this is set by this.lfoDestination as well.
     this.lfoDestination = config.initialLFODestination;
+    
+    this._triangleOscillatorGain = this._context.createGain();
+    this._triangleOscillatorGain.gain.value = config.triangleOscillatorVolume;
+    this._triangleOscillatorGain.connect(this._filter);
+    this._sawOscillatorGain = this._context.createGain();
+    this._sawOscillatorGain.gain.value = config.sawOscillatorVolume;
+    this._sawOscillatorGain.connect(this._filter);
+    this._squareOscillatorGain = this._context.createGain();
+    this._squareOscillatorGain.gain.value = config.squareOscillatorVolume;
+    this._squareOscillatorGain.connect(this._filter);
   }
 
   get volume() {
@@ -177,6 +196,30 @@ export default class Synthesizer implements ISynthesizer {
   set volume(value: number) {
     this._gainNode.gain.value = value;
   }
+
+  get sawOscillatorVolume() {
+    return this._sawOscillatorGain.gain.value;
+  }
+
+  set sawOscillatorVolume(value: number) {
+    this._sawOscillatorGain.gain.value = value;
+  }
+
+  get triangleOscillatorVolume() {
+    return this._triangleOscillatorGain.gain.value;
+  }
+
+  set triangleOscillatorVolume(value: number) {
+    this._triangleOscillatorGain.gain.value = value;
+  }
+  
+  get squareOscillatorVolume() {
+    return this._squareOscillatorGain.gain.value;
+  }
+
+  set squareOscillatorVolume(value: number) {
+    this._squareOscillatorGain.gain.value = value;
+  }  
 
   get filterFrequency() {
     return this._filter.frequency.value;
@@ -249,9 +292,25 @@ export default class Synthesizer implements ISynthesizer {
     ];
   }
 
+  private getOscGain(type: OscillatorType): GainNode {
+    if (type === "sawtooth") {
+      return this._sawOscillatorGain;
+    }
+
+    if (type === "triangle") {
+      return this._triangleOscillatorGain;
+    }
+
+    if (type === "square") {
+      return this._squareOscillatorGain;
+    }
+
+    throw new Error("");
+  }
+
   private createOsc(type: OscillatorType, frequency: number): OscillatorNode {
     const osc = this._context.createOscillator();
-    osc.connect(this._filter);
+    osc.connect(this.getOscGain(type));
     osc.frequency.value = frequency;
     osc.type = type;
     return osc;
@@ -280,10 +339,9 @@ export default class Synthesizer implements ISynthesizer {
   
   stop() {
     this.getOscillators().forEach(o => {
-      console.log(o);
       if (o) {
         o.stop();
-        o.disconnect(this._filter);
+        o.disconnect(this.getOscGain(o.type));
         o = undefined;
       }
     });
